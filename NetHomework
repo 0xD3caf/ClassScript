@@ -116,7 +116,7 @@ def scanMe(user_args):
 	if user_args.get("file") != None:			#checks if Ip addrs should come from file
 		in_file = user_args.get("file")
 
-	if user_args.get("type") != None:			#checks for TCp or UDP scan type
+	if user_args.get("type") != None:				#checks for TCp or UDP scan type
 		scan_type = user_args.get("type").upper()
 	
 	if in_file == "":
@@ -164,7 +164,7 @@ def scanMe(user_args):
 			for target_port in port_list:
 				try:
 					#do the scanning here
-					answer = sr1(IP(dst=target_host)/UDP(sport=RandShort(), dport=target_port)/DNS(rd=1,qd=DNSQR(qname="google.com",qtype="A", verbose = 0)))
+					answer = sr1(IP(dst=target_host)/UDP(sport=RandShort(), dport=target_port)/DNS(rd=1,qd=DNSQR(qname="google.com",qtype="A")))
 					test = answer.an
 					if test == None:
 						new_host = [target_port, "C"]
@@ -174,7 +174,9 @@ def scanMe(user_args):
 						new_host = [target_port, "O"]
 						results[target_host].append(new_host)
 						time.sleep(timeout)
-				except:
+				except Exception as t:
+					print("test")
+					print(t)
 					new_host = [target_port, "C"]
 					results[target_host].append(new_host)
 					time.sleep(timeout)
