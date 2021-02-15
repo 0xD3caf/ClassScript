@@ -39,8 +39,29 @@ Bonus Conditions (+3.5 possible):
 
 #Mackenzie Summers
 
+'''
+FLAGS
 
-# COMMAND -i SINGLE_IP {-I[IP_RANGE_START IP_RANGE_END]} -p SINGLE_PORT {-P | --ports [PORT_RANGE_START PORT_RANGE_END]} -t | --type {TCP|UDP} 
+-i Single IP
+-I IP List
+
+-p Single Port
+-P or --ports Port range
+
+-T or --type TCP or UDP specifier
+
+-L or --list Takes the remaning vars as a list to try (INACTIVE)
+
+-F or --file to read IP addrs from
+
+-O or --out File to write results to
+
+-Q or --quiet turns off display of closed ports
+
+-W or --wait gives a time to wait between scans
+'''
+
+# COMMAND -i SINGLE_IP {-I[IP_RANGE_START IP_RANGE_END]} -p SINGLE_PORT {-P | --ports [PORT_RANGE_START PORT_RANGE_END]} -T | --type {TCP|UDP} 
 																#{-F | --file[FILE_PATH]} {-O | --out[OUTFILE_PATH]} {-Q | --quiet} {-W | --wait [WAIT_TIME]}
 #to scan IP lists that are not sequential use the from file option
 
@@ -123,11 +144,11 @@ def scanMe(user_args):
 	for host in host_list:
 		results.update({host: []})
 	if scan_type == "TCP":
-		client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		for target_host in host_list:			#sets up to do scanning on ports for all targets
 			for target_port in port_list:
 				try:
 					#do the scanning here
+					client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 					client.connect((target_host, target_port))
 					print("test")
 					new_host = [target_port, "O"]
@@ -137,7 +158,7 @@ def scanMe(user_args):
 					new_host = [target_port, "C"]
 					results[target_host].append(new_host)
 					time.sleep(timeout)
-			client.close()
+				client.close()
 	if scan_type == "UDP":
 		for target_host in host_list:			#sets up to do scanning on ports for all targets
 			for target_port in port_list:
@@ -166,9 +187,13 @@ def scanMe(user_args):
 			target_final_list = results.get(key)
 			for item in target_final_list:	
 				if item[1] == "O":
-					print(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Open")
+					print(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Open\n")
 				elif quiet == False:
-					print(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed/Filtered")
+					if scan_type == "TCP":
+						print(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed\n")
+					else:
+						print(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed/Filtered\n")		
+
 	else:
 		f = open(out_file, "w")
 		f.write("Port Type: {}\n".format(scan_type))
@@ -177,28 +202,15 @@ def scanMe(user_args):
 			target_final_list = results.get(key)
 			for item in target_final_list:
 				if item[1] == "O":
-					f.write(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Open")
+					f.write(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Open\n")
 				elif quiet == False:
-					f.write(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed/Filtered")		
+					if scan_type == "TCP":
+						f.write(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed\n")
+					else:	
+						f.write(key + " "*(25 - len(key))+ str(item[0]) + " "*(25 - len(str(item[0]))) + "Closed/Filtered\n")		
 
 	return
-'''
-FLAGS
--i Single IP
--I IP List
 
--p Single Port
--P or --ports Port range
-
--t or --type TCP or UDP specifier
-
--L or --list Takes the remaning vars as a list to try (INACTIVE)
-
--F or --file to read IP addrs from
-
--O or --out File to write results to
-
-'''
 
 
 parser = argparse.ArgumentParser()
