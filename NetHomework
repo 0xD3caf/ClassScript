@@ -51,6 +51,7 @@ import socket
 import requests
 from ipaddress import ip_address
 import sys
+from scapy.all import *
 
 def findIPs(start, end):
     start = ip_address(start)
@@ -124,18 +125,23 @@ def scanMe(user_args):
 					print(e)
 			client.close()
 	if scan_type == "UDP":
-		client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		#ans = sr1(IP(dst="8.8.8.8")/UDP(sport=RandShort(), dport=53)/DNS(rd=1,qd=DNSQR(qname="google.com",qtype="A")))
+		#print(ans.an.rdata)
+		#UDP_packet = IP(dst = "127.0.0.1")/UDP(sport=RandShort(), dport=443)/Raw(load="test")
+		#send(UDP_packet)
 		for target_host in host_list:			#sets up to do scanning on ports for all targets
 			for target_port in port_list:
 				try:
-					client.sendto(str.encode("Message"), (target_host, target_port))
-					resp = client.recv(4096)
-					print(resp)
-				except Exception as e:
-					print("Port {} is closed".format(target_port))
-					print(e)
-			client.close()
+					#do the scanning here
+					answer = sr1(IP(dst=target_host)/UDP(sport=RandShort(), dport=target_port)/DNS(rd=1,qd=DNSQR(qname="google.com",qtype="A")))
+					test = answer.an.rdata
+					print("Port {} is open".format(target_port))
+				except:
+					print("Port {} is closed or Filtered".format(target_port))
 
+					#print(is_valid_ipv4_address(answer.an.rdata))
+					#if type(answer.an.rdata) == "None":
+					#	print("it failed")
 
 				#no response = all good
 				#error connection on closed
@@ -171,9 +177,9 @@ IP_group.add_argument("-i", help = "Takes a single IP to scan", metavar = "IP Ad
 IP_group.add_argument("-I", help = "Takes 2 Ip addreses and uses them as a range. WARNING: this will scan many IP addreses", nargs = 2, metavar = "Start/End IP address")
 
 Port_group.add_argument("-p", help = 'The port to be scanned', type=int, choices = range(1,65536), metavar = "{1...65536}")
-Port_group.add_argument("-P", "--ports", help = "Give a range of IP addresses, ALL IPs in range will be scanned", nargs = 2,choices = range(1,65536), metavar = "{1...65535}", type = int)
+Port_group.add_argument("-P", "--ports", help = "Give a range of IP addresses, ALL IPs in range will be scanned", type = int, nargs = 2,choices = range(1,65536), metavar = "{1...65535}")
 
-parser.add_argument("-t", "--type", help = "TCP or UDP specifier", choices = ["TCP", "tcp", "UDP", "udp"])
+parser.add_argument("-t", "--type", help = "TCP or UDP specifier", choices = ["TCP", "tcp", "UDP", "udp"], metavar = "{TCP | UDP")
 #parser.add_argument("-L", "--list", help = "Takes a value for number in list followed by a list of IP addreses to scan")
 parser.add_argument("-F", "--file", help = "Takes a file to read IP addresses from, One per line")
 parser.add_argument("-O", "--out", help = "takes a file location to output results of scan")
